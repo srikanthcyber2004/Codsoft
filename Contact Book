@@ -1,0 +1,83 @@
+import sys
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QListWidget, QInputDialog, QMessageBox
+
+class ContactBook(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Contact Book")
+        self.setGeometry(200, 200, 300, 300)
+
+        self.contacts = {}
+
+        layout = QVBoxLayout()
+
+        self.contact_list = QListWidget()
+        layout.addWidget(self.contact_list)
+
+        buttons = ['Add', 'View', 'Search', 'Update', 'Delete']
+        for button in buttons:
+            btn = QPushButton(button)
+            btn.clicked.connect(self.handle_button)
+            layout.addWidget(btn)
+
+        self.setLayout(layout)
+        
+        print("ContactBook initialized")  # Debug print statement
+
+    def handle_button(self):
+        action = self.sender().text()
+        if action == 'Add':
+            self.add_contact()
+        elif action == 'View':
+            self.view_contact()
+        elif action == 'Search':
+            self.search_contact()
+        elif action == 'Update':
+            self.update_contact()
+        elif action == 'Delete':
+            self.delete_contact()
+
+    def add_contact(self):
+        name, ok = QInputDialog.getText(self, "Add Contact", "Name:")
+        if ok and name:
+            phone, ok = QInputDialog.getText(self, "Add Contact", "Phone:")
+            if ok and phone:
+                self.contacts[name] = phone
+                self.contact_list.addItem(f"{name} - {phone}")
+
+    def view_contact(self):
+        item = self.contact_list.currentItem()
+        if item:
+            name = item.text().split(" - ")[0]
+            QMessageBox.information(self, "Contact Details", f"Name: {name}\nPhone: {self.contacts[name]}")
+
+    def search_contact(self):
+        text, ok = QInputDialog.getText(self, "Search Contact", "Name or Phone:")
+        if ok and text:
+            for name, phone in self.contacts.items():
+                if text in (name, phone):
+                    QMessageBox.information(self, "Contact Found", f"Name: {name}\nPhone: {phone}")
+                    return
+            QMessageBox.information(self, "Not Found", "Contact not found.")
+
+    def update_contact(self):
+        item = self.contact_list.currentItem()
+        if item:
+            name = item.text().split(" - ")[0]
+            phone, ok = QInputDialog.getText(self, "Update Contact", "New Phone:", text=self.contacts[name])
+            if ok and phone:
+                self.contacts[name] = phone
+                item.setText(f"{name} - {phone}")
+
+    def delete_contact(self):
+        item = self.contact_list.currentItem()
+        if item:
+            name = item.text().split(" - ")[0]
+            del self.contacts[name]
+            self.contact_list.takeItem(self.contact_list.row(item))
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = ContactBook()
+    window.show()
+    sys.exit(app.exec_()
