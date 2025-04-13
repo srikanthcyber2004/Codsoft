@@ -1,0 +1,87 @@
+import sys 
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout,QHBoxLayout,QLineEdit,QListWidget,QListWidgetItem
+class ToDoList(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.tasks = []
+
+        self.initUI()
+
+
+    def initUI(self):
+        self.setWindowTitle('To-Do List')
+
+        self.layout=QVBoxLayout()
+
+        self.task_input=QLineEdit()
+        self.layout.addWidget(self.task_input)
+
+        self.buttons_layout=QHBoxLayout()
+
+        self.add_button=QPushButton('Add Task')
+        self.add_button.clicked.connect(self.add_task)
+        self.buttons_layout.addWidget(self.add_button)
+
+        self.update_button=QPushButton('Update Task',self)
+        self.update_button.clicked.connect(self.update_task)
+        self.buttons_layout.addWidget(self.update_button)   
+
+        self.complete_button=QPushButton('Complete Task',self)
+        self.complete_button.clicked.connect(self.complete_task)
+        self.buttons_layout.addWidget(self.complete_button)
+
+        self.delete_button=QPushButton('Delete Task',self)
+        self.delete_button.clicked.connect(self.delete_task)
+        self.buttons_layout.addWidget(self.delete_button)
+    
+        self.layout.addLayout(self.buttons_layout)
+
+        self.tasks_list=QListWidget(self)
+        self.layout.addWidget(self.tasks_list)
+
+        self.setLayout(self.layout)
+
+    def add_task(self):
+        task=self.task_input.text() 
+        if task:
+           self.tasks.append({'task':task,"completed":False})
+           self.update_tasks_list()
+           self.task_input.clear()
+
+    def update_task(self): 
+        task_index=self.tasks_list.currentRow()
+        new_task=self.task_input.text()
+        if 0 <= task_index<len(self.tasks) and new_task:
+            self.tasks[task_index]['task']=new_task
+            self.update_tasks_list()
+            self.task_input.clear()
+
+    def complete_task(self):
+        task_index=self.tasks_list.currentRow()
+        if 0<=task_index<len(self.tasks):
+           self.tasks[task_index]['completed']=True
+           self.update_tasks_list()
+        
+    def delete_task(self):
+        task_index=self.tasks_list.currentRow()
+        if 0<=task_index<len(self.tasks):
+           del self.tasks[task_index]
+           self.update_tasks_list()
+
+    def update_tasks_list(self):
+        self.tasks_list.clear()
+        for task in self.tasks:
+            status="Done" if task['completed'] else "Pending"
+            item=QListWidgetItem(f"{task['task']} - {status}")
+            self.tasks_list.addItem(item) 
+
+
+def main():
+    app=QApplication(sys.argv)
+    todo_list=ToDoList()
+    todo_list.show()
+    sys.exit(app.exec_())
+
+if __name__=='__main__':
+    main()
+
